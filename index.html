@@ -125,6 +125,7 @@
 		var dateSelect = $('#dateSelect').MPDatepicker();
 		var items = function() {return item_list = _.map(arguments, function(item) {return {label: String(item), value: item};})};
 		var max_results = $('#numResultsSelect').MPSelect({items: items(5, 10, 15, 25, 50)});
+		max_results.val(15);
 		function runQuery() {
 			$('.select_button:not(#eventSelect > .select_button, #propSelect > .select_button, #startEventSelect > .select_button, #peoplePropSelect > .select_button)').addClass('small');
 			$('.select_menu:not(#eventSelect > .select_menu, #propSelect > .select_menu, #startEventSelect > .select_menu, #peoplePropSelect > .select_menu)').addClass('small');
