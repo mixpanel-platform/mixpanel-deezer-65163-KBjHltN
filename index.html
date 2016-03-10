@@ -56,43 +56,54 @@
   		}
   	</style>
   	<script id='query'>
-		function theTop(n) {
-		    return function(accumulators, items) {
-		        var count = 0;
-		        var countAdder = function(item) {count += item};
-		        _.chain(items)
-		         .pluck('value')
-		         .each(countAdder);
-		        _.chain(accumulators)
-		         .pluck('count')
-		         .each(countAdder);
-		        return {results: _.pluck(accumulators, 'results')
-		                          .reduce(function(a,b) {return a.concat(b);}, [])
-		                          .concat(items)
-		                          .sort(function(a, b) {return b.value - a.value;})
-		                          .slice(0, n),
-		                count: count};
-		    };
-		}                                                        
-
-		function main() {
-		  return Events({
-		    from_date: params.from_date,
-		    to_date: params.to_date,
-		  })
-		  .groupBy(['name'], mixpanel.reducer.count())
-		  .reduce(theTop(params.num_results))
-		  .map(function(item) {
-		      _.each(item.results, function(summary) {
-		          summary.Percentage = Math.round(summary.value * 1000 / item.count) / 10;
-		          summary['Event Name'] = summary.key[0];
-		          summary.Count = summary.value;
-		          delete summary.value;
-		          delete summary.key;
-		      });
-		      return item;
-		  });
-		}
+        function theTop(n) {
+            return function(accumulators, items) {
+                var count = 0;
+                var countAdder = function(item) {count += item};
+                _.chain(items)
+                 .pluck('value')
+                 .each(countAdder);
+                _.chain(accumulators)
+                 .pluck('count')
+                 .each(countAdder);
+                return {results: _.pluck(accumulators, 'results')
+                                  .reduce(function(a,b) {return a.concat(b);}, [])
+                                  .concat(items)
+                                  .sort(function(a, b) {return b.value - a.value;})
+                                  .slice(0, n),
+                        count: count};
+            };
+        }                                                        
+        
+        var add_commas = function(num) {
+            num = num.toString();
+            var new_string = '';
+            for (var i = 0; i < num.length; i++) {
+              new_string += num[i];
+              if (((i + 1) % 3 == num.length % 3)&&(i + 1 != num.length))
+                new_string += ',';
+            }
+            return new_string;
+        };
+                  
+        function main() {
+          return Events({
+            from_date: params.from_date,
+            to_date: params.to_date,
+          })
+          .groupBy(['name'], mixpanel.reducer.count())
+          .reduce(theTop(params.num_results))
+          .map(function(item) {
+              _.each(item.results, function(summary) {
+                  summary.Percentage = Math.round(summary.value * 1000 / item.count) / 10;
+                  summary['Event Name'] = summary.key[0];
+                  summary['Count (' + add_commas(item.count) + ')'] = add_commas(summary.value);
+                  delete summary.value;
+                  delete summary.key;
+              });
+              return item;
+          });
+        }
   	</script>
   	<div class="mixpanel-platform-section">
   	  <div class="header" style="display:flex;justify-content:center;align-items:center;width:695px;">Most Common Events</div>
